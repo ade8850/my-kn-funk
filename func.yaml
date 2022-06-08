@@ -1,0 +1,24 @@
+version: 0.19.0
+name: my-kn-func
+namespace: ""
+runtime: python
+registry: ""
+image: eu.gcr.io/krules-dev-254113/my-kn-func:latest
+imageDigest: sha256:d34aba53054b4f1e3800c484e40ade3e9ba7ad60ae79c8438fc9788279f28e4e
+build: local
+git: {}
+builder: ""
+builders: {}
+buildpacks: []
+volumes: []
+buildEnvs: []
+envs: []
+annotations: {}
+options: {}
+labels: []
+healthEndpoints:
+  liveness: /health/liveness
+  readiness: /health/readiness
+created: 2022-06-08T14:13:28.477358974+02:00
+invocation:
+  format: http

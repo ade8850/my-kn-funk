@@ -1,0 +1,20 @@
+apiVersion: krules.dev/v1alpha1
+kind: ConfigurationProvider
+metadata:
+  name: config-krules-subjects-redis
+spec:
+  appliesTo:
+    krules.dev/type:
+    - ruleset
+    - generic
+  container:
+    env:
+    - name: REDIS_AUTH
+      valueFrom:
+        secretKeyRef:
+          key: auth-string
+          name: redis-auth
+  data:
+    key_prefix: kn-func-lab
+    url: redis://:$REDIS_AUTH@10.16.16.3:6379/4
+  key: subjects-backends.redis
