@@ -1,0 +1,84 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  creationTimestamp: "2022-06-08T14:11:43Z"
+  generation: 1
+  labels:
+    function.knative.dev/name: my-kn-func
+  name: my-kn-func-git-pipeline
+  namespace: kn-func-lab
+  resourceVersion: "156148436"
+  uid: 9ff403a2-8632-42d1-a982-5d84032a5b37
+spec:
+  params:
+  - default: ssh://alberto@airspot.tech@source.developers.google.com:2022/p/krules-dev-254113/r/my-kn-func
+    description: Git repository that hosts the function project
+    name: gitRepository
+    type: string
+  - description: Git revision to build
+    name: gitRevision
+    type: string
+  - default: ""
+    description: Path where the function project is
+    name: contextDir
+    type: string
+  - description: Function image name
+    name: imageName
+    type: string
+  - description: Buildpacks builder image to be used
+    name: builderImage
+    type: string
+  tasks:
+  - name: fetch-sources
+    params:
+    - name: url
+      value: $(params.gitRepository)
+    - name: revision
+      value: $(params.gitRevision)
+    taskRef:
+      kind: Task
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: source-workspace
+  - name: build
+    params:
+    - name: APP_IMAGE
+      value: $(params.imageName)
+    - name: SOURCE_SUBPATH
+      value: $(params.contextDir)
+    - name: BUILDER_IMAGE
+      value: $(params.builderImage)
+    runAfter:
+    - fetch-sources
+    taskRef:
+      kind: Task
+      name: func-buildpacks
+    workspaces:
+    - name: source
+      workspace: source-workspace
+    - name: cache
+      workspace: cache-workspace
+    - name: dockerconfig
+      workspace: dockerconfig-workspace
+  - name: deploy
+    params:
+    - name: path
+      value: $(workspaces.source.path)/$(params.contextDir)
+    runAfter:
+    - build
+    taskRef:
+      kind: Task
+      name: func-deploy
+    workspaces:
+    - name: source
+      workspace: source-workspace
+  workspaces:
+  - description: Directory where function source is located.
+    name: source-workspace
+  - description: Directory where Buildpacks cache is stored.
+    name: cache-workspace
+  - description: Directory containing image registry credentials stored in `config.json`
+      file.
+    name: dockerconfig-workspace
+    optional: true
